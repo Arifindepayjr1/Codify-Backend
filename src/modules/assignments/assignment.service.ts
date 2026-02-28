@@ -38,6 +38,37 @@ export class AssignmentService {
     return this.repo.create(assignment);
   }
 
+  async attachChallenges(
+    classroomId: number,
+    assignmentId: number,
+    userId: number,
+    challengeIds: number[],
+  ): Promise<void> {
+
+    await this.membershipService.ensureRole(
+      classroomId,
+      userId,
+      [Role.OWNER, Role.TEACHER],
+    );
+
+    const assignment = await this.repo.findById(assignmentId);
+    if (!assignment || assignment.classroomId !== classroomId) {
+      throw new NotFoundException('Assignment not found');
+    }
+
+    if (new Set(challengeIds).size !== challengeIds.length) {
+      throw new BadRequestException('Duplicate challenge IDs in request');
+    }
+
+    if (assignment.isPublished) {
+      throw new BadRequestException(
+        'Cannot modify a published assignment',
+      );
+    }
+
+    await this.repo.attachChallenges(assignmentId, challengeIds);
+  }
+
   async findOne(id: number, classroomId: number, userId: number): Promise<Assignment> {
     const assignment = await this.repo.findById(id);
     if (!assignment || assignment.classroomId !== classroomId) {

@@ -29,6 +29,7 @@ import { AssignmentResponseDto } from './dto/assignment-response.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
+import { AttachChallengesDto } from './dto/attach-challenge.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -52,6 +53,26 @@ export class AssignmentController {
     @CurrentUser() user: CurrentUserDto
   ) {
     return this.service.create(classroomId, user.id, dto);
+  }
+
+  @Post(':id/challenges')
+  @ApiOperation({ summary: 'Attach coding challenges to assignment' })
+  @ApiParam({ name: 'classroomId', example: 3 })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiBody({ type: AttachChallengesDto })
+  @ApiOkResponse({ description: 'Challenges attached successfully' })
+  attachChallenges(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('id', ParseIntPipe) assignmentId: number,
+    @Body() dto: AttachChallengesDto,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.attachChallenges(
+      classroomId,
+      assignmentId,
+      user.id,
+      dto.challengeIds,
+    );
   }
 
   // =============== FIND ONE =================
