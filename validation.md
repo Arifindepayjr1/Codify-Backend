@@ -1370,16 +1370,6 @@ Each test case follows this structure:
 
 ---
 
-| Test Case Field | Details |
-|---|---|
-| **Test Case ID: Test Case Name** | TC-API-07: Teacher deletes a coding challenge that is currently attached to an assignment |
-| **Purpose** | Verify system behavior when a teacher attempts to delete a challenge that is linked to an active assignment. The system must protect data integrity by preventing orphaned assignment references. |
-| **Initiation Criteria** | A challenge exists and is attached to at least one assignment. A valid teacher authentication token is available. |
-| **Execution Steps** | 1. Send a DELETE request to `/challenges/{challengeId}` targeting the challenge that is attached to an assignment.<br>2. Include a valid authentication token in the request header. |
-| **Expected Results** | Deletion is prevented to protect the linked assignment. System returns 409 Conflict. |
-
----
-
 # FEATURE 8: Attach Challenge to Assignment
  
 **User Story:** As a teacher, I want to attach a coding challenge to an assignment so that students can complete programming tasks inside the assignment.
@@ -1454,4 +1444,112 @@ Each test case follows this structure:
 | **Execution Steps** | 1. Send a DELETE request to `/challenges/{challengeId}` targeting the challenge that is attached to an assignment.<br>2. Include a valid authentication token in the request header. |
 | **Expected Results** | Deletion is prevented to protect the linked assignment. System returns 409 Conflict. |
 
+---
+
+# FEATURE 9: Code Runner - Execute Student Code with Test Cases
+ 
+**User Story:** As a student, I want to run my code against challenge test cases so that I can verify if my solution works correctly.
+As a system, I must execute the submitted code against test cases and return pass/fail results.
+As a student, I want to receive execution feedback so I can improve my code.
+ 
+**Functional Scenario: Student Runs Code During Assignment**
+ 
+1. Student opens an assignment containing a coding challenge.
+2. Student writes code in the editor.
+3. Student clicks Run Code.
+4. Backend sends request to the Code Runner API.
+5. System executes the code with the challenge test cases.
+6. System compares output with expected results.
+7. System returns pass/fail feedback to the student.
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-CRE-01: Student runs valid code that passes all test cases |
+| **Purpose** | Verify that the system executes student code and returns pass results for a correct solution. |
+| **Initiation Criteria** | Student is authenticated. Assignment exists. Coding challenge exists with at least one test case attached. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/code-runner/run`.<br>2. Provide `{ "sourceCode": "...", "language": "C", "challengeId": 1 }` in the request body with a correct implementation.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 200 OK. Response includes execution output and test results where status is PASS for all test cases. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-CRE-02: Student runs code that produces incorrect output and fails test cases |
+| **Purpose** | Verify that the system correctly reports failed test cases when the code output does not match the expected result. |
+| **Initiation Criteria** | Student is authenticated. Coding challenge contains at least one test case. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/code-runner/run`.<br>2. Provide `{ "sourceCode": "...", "language": "C", "challengeId": 1 }` in the request body with an incorrect implementation that produces wrong output.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 200 OK. Response contains test results where status is FAIL. Both expected and actual outputs are returned in the response body. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-CRE-03: User attempts to run code without providing an authentication token |
+| **Purpose** | Ensure that only authenticated students can execute code and that unauthenticated requests are blocked. |
+| **Initiation Criteria** | Assignment and coding challenge exist. No authentication token is present. |
+| **Execution Steps** | 1. Send a POST request to `/code-runner/run`.<br>2. Provide valid source code and language in the request body.<br>3. Do not include any Authorization header in the request. |
+| **Expected Results** | API returns 401 Unauthorized. Code execution is not performed. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-CRE-04: Student submits code that contains a syntax error |
+| **Purpose** | Verify that the system returns a meaningful compilation error when the submitted code cannot be compiled. |
+| **Initiation Criteria** | Student is authenticated. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/code-runner/run`.<br>2. Provide code with a syntax error (e.g. missing semicolon) along with a valid language and challengeId in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 422 Unprocessable Entity. Response includes a compiler error message describing the issue. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-CRE-05: Student submits code that contains an infinite loop |
+| **Purpose** | Verify that the system enforces an execution time limit and safely terminates programs that run indefinitely. |
+| **Initiation Criteria** | Student is authenticated. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/code-runner/run`.<br>2. Provide code containing an infinite loop (e.g. `while(1);`) along with a valid language and challengeId in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 408 Request Timeout. Execution is terminated safely after the configured time limit is exceeded. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-CRE-06: Student runs code for a challenge that has no test cases defined |
+| **Purpose** | Verify that the system can execute code and return output even when no test cases are attached to the challenge. |
+| **Initiation Criteria** | Student is authenticated. A coding challenge exists but has no test cases. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/code-runner/run`.<br>2. Provide valid source code, language, and the challengeId of a challenge with no test cases in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 200 OK. Response includes the program execution output and an empty testResults array. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-CRE-07: Student submits a run request with a non-existing challenge ID |
+| **Purpose** | Verify that the system handles invalid challenge IDs properly and returns a clear error. |
+| **Initiation Criteria** | Student is authenticated. No challenge with the provided ID exists. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/code-runner/run`.<br>2. Provide a non-existing challengeId (e.g. `{ "sourceCode": "...", "language": "C", "challengeId": 999 }`) in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 404 Not Found. Error message indicates the challenge does not exist. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-CRE-08: Student submits code in an unsupported programming language |
+| **Purpose** | Verify that the system rejects execution requests for languages that are not supported. |
+| **Initiation Criteria** | Student is authenticated. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/code-runner/run`.<br>2. Provide `{ "sourceCode": "print('hello')", "language": "Python", "challengeId": 1 }` in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 400 Bad Request with the message "Unsupported language". |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-CRE-09: Student receives complete execution feedback after running code |
+| **Purpose** | Verify that the system provides full execution output and per-test-case evaluation results so the student can understand what passed and what failed. |
+| **Initiation Criteria** | Student is authenticated. Coding challenge has multiple test cases attached. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/code-runner/run`.<br>2. Provide valid source code, language, and a challengeId that has multiple test cases in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 200 OK. Response body contains: program output, pass/fail status per test case, and expected vs actual output for each test case. |
+ 
 ---
