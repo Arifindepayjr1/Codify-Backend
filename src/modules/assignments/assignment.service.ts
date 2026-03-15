@@ -32,11 +32,9 @@ export class AssignmentService {
 
     const assignment = Assignment.create({
       classroomId: classroomId,
-      sectionId: 1,
       title: dto.title,
       description: dto.description,
       dueAt: dto.dueAt,
-      position: dto.position,
     });
 
     return this.repo.create(assignment);

@@ -11,11 +11,9 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     const result = await this.prisma.assignment.create({
       data: {
         classroom_id: assignment.classroomId,
-        section_id: assignment.sectionId,
         title: assignment.title,
         description: assignment.description,
         due_at: assignment.dueAt,
-        position: assignment.position,
         is_published: assignment.isPublished,
       },
     });
@@ -23,11 +21,9 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     return Assignment.rehydrate({
       id: result.id,
       classroomId: result.classroom_id,
-      sectionId: result.section_id,
       title: result.title,
       description: result.description,
       dueAt: result.due_at,
-      position: result.position,
       isPublished: result.is_published,
     });
   }
@@ -88,11 +84,9 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     return Assignment.rehydrate({
       id: result.id,
       classroomId: result.classroom_id,
-      sectionId: result.section_id,
       title: result.title,
       description: result.description,
       dueAt: result.due_at,
-      position: result.position,
       isPublished: result.is_published,
     });
   }
@@ -100,18 +94,15 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
   async findAllByClassroom(classroomId: number): Promise<Assignment[]> {
     const results = await this.prisma.assignment.findMany({
       where: { classroom_id: classroomId },
-      orderBy: { position: 'asc' },
     });
 		
     return results.map(result =>
       Assignment.rehydrate({
         id: result.id,
         classroomId: result.classroom_id,
-        sectionId: result.section_id,
         title: result.title,
         description: result.description,
         dueAt: result.due_at,
-        position: result.position,
         isPublished: result.is_published,
       }),
     );
@@ -124,7 +115,6 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
         title: assignment.title,
         description: assignment.description,
         due_at: assignment.dueAt,
-        position: assignment.position,
         is_published: assignment.isPublished,
       }
     });
@@ -132,11 +122,9 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     return Assignment.rehydrate({
       id: result.id,
       classroomId: result.classroom_id,
-      sectionId: result.section_id,
       title: result.title,
       description: result.description,
       dueAt: result.due_at,
-      position: result.position,
       isPublished: result.is_published,
     });
   }

@@ -61,7 +61,6 @@ model Classroom {
 
   users       ClassroomUser[]
   assignments Assignment[]
-  sections    Section[]
   logo        ClassroomLogo?
 }
 
@@ -90,41 +89,26 @@ model ClassroomLogo {
   classroom Classroom @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
 }
 
-model Section {
-  id           Int    @id @default(autoincrement())
-  classroom_id Int
-  title        String
-  position     Int
-
-  classroom   Classroom    @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
-  assignments Assignment[]
-
-  @@unique([classroom_id, position])
-}
-
 model Assignment {
   id           Int @id @default(autoincrement())
   classroom_id Int
-  section_id   Int
 
   title        String
   description  String   @db.Text
   due_at       DateTime
   is_published Boolean  @default(false)
-  position     Int
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   classroom            Classroom              @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
-  section              Section                @relation(fields: [section_id], references: [id], onDelete: Cascade)
   assignmentChallenges AssignmentChallenge[]
   submissions          Submission[]
 }
 
 model Tag {
   id         Int      @id @default(autoincrement())
-  name       String
+  name       String   @unique
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
