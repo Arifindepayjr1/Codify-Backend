@@ -1,4 +1,4 @@
-# Test Cases — Validation Documentation
+# Test Cases - Validation Documentation
 
 ## How to Read Each Test Case
 
@@ -7,7 +7,7 @@ Each test case follows this structure:
 | Test Case Field | Details |
 |---|---|
 | Test Case ID: Test Case Name | Unique ID and a plain-English name describing the scenario |
-| Purpose | Why this test exists — what user behavior or system rule it verifies |
+| Purpose | Why this test exists - what user behavior or system rule it verifies |
 | Initiation Criteria | The starting state the system must be in before the test is executed |
 | Execution Steps | Step-by-step actions taken to run the test |
 | Expected Results | What the system must return or do for the test to pass |
@@ -1380,4 +1380,78 @@ Each test case follows this structure:
 
 ---
 
-*Last updated: 2026 — Document version 2.1*
+# FEATURE 8: Attach Challenge to Assignment
+ 
+**User Story:** As a teacher, I want to attach a coding challenge to an assignment so that students can complete programming tasks inside the assignment.
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-AC-01: Teacher successfully attaches a coding challenge to an assignment |
+| **Purpose** | Verify that the API allows a teacher to attach an existing coding challenge to an assignment. |
+| **Initiation Criteria** | Classroom exists. Assignment exists within that classroom. Coding challenge exists. A valid teacher authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/classrooms/{classroomId}/assignments/{assignmentId}/challenge`.<br>2. Provide `{ "challengeId": 1 }` in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 200 OK. Response body confirms the challenge has been attached. Database stores the relationship between the assignment and the challenge. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-AC-02: Teacher tries to attach a challenge using a non-existing challenge ID |
+| **Purpose** | Ensure the API handles invalid challenge IDs properly and does not create a broken reference. |
+| **Initiation Criteria** | Classroom and assignment exist. No challenge with the provided ID exists. A valid teacher authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/classrooms/{classroomId}/assignments/{assignmentId}/challenge`.<br>2. Provide a non-existing challengeId (e.g. `{ "challengeId": 999 }`) in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 404 Not Found. Error message indicates the challenge does not exist. No database changes occur. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-AC-03: User attempts to attach a challenge without providing an authentication token |
+| **Purpose** | Verify that the API requires authentication before performing the attach action. |
+| **Initiation Criteria** | Classroom and assignment exist. Coding challenge exists. No authentication token is present. |
+| **Execution Steps** | 1. Send a POST request to `/classrooms/{classroomId}/assignments/{assignmentId}/challenge`.<br>2. Provide a valid challengeId in the request body.<br>3. Do not include any Authorization header in the request. |
+| **Expected Results** | API returns 401 Unauthorized. Challenge is not attached to the assignment. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-AC-04: Teacher tries to attach a challenge to an assignment that does not exist |
+| **Purpose** | Verify that the API returns a not-found error when the assignment ID in the request path does not exist. |
+| **Initiation Criteria** | Classroom exists. No assignment with the provided ID exists. A valid teacher authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/classrooms/{classroomId}/assignments/999/challenge`.<br>2. Provide a valid challengeId (e.g. `{ "challengeId": 1 }`) in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 404 Not Found with message "Assignment not found". |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-AC-05: Teacher removes a coding challenge from an assignment |
+| **Purpose** | Verify that the API allows a teacher to detach a challenge that is currently attached to an assignment. |
+| **Initiation Criteria** | Assignment exists and already has a coding challenge attached. A valid teacher authentication token is available. |
+| **Execution Steps** | 1. Send a DELETE request to `/classrooms/{classroomId}/assignments/{assignmentId}/challenge/{challengeId}`.<br>2. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 200 OK. Challenge is removed from the assignment. Database no longer stores the relationship between the assignment and the challenge. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-AC-06: Teacher tries to remove a challenge that is not attached to the assignment |
+| **Purpose** | Ensure the API handles deletion of a non-attached challenge correctly and returns a meaningful error. |
+| **Initiation Criteria** | Assignment exists. The specified challenge exists but is not attached to this assignment. A valid teacher authentication token is available. |
+| **Execution Steps** | 1. Send a DELETE request to `/classrooms/{classroomId}/assignments/{assignmentId}/challenge/{challengeId}` where the challenge is not attached.<br>2. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 404 Not Found. Error message indicates the challenge is not attached to this assignment. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-AC-07: Teacher deletes a coding challenge that is currently attached to an assignment |
+| **Purpose** | Verify system behavior when a teacher attempts to delete a challenge that is linked to an active assignment. The system must protect data integrity by preventing orphaned assignment references. |
+| **Initiation Criteria** | A challenge exists and is attached to at least one assignment. A valid teacher authentication token is available. |
+| **Execution Steps** | 1. Send a DELETE request to `/challenges/{challengeId}` targeting the challenge that is attached to an assignment.<br>2. Include a valid authentication token in the request header. |
+| **Expected Results** | Deletion is prevented to protect the linked assignment. System returns 409 Conflict. |
+
+---
