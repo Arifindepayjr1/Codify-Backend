@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { QueueService } from '../queue/queue.service';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class CodeRunnerService{
 
-  constructor(private queueService: QueueService){}
+    constructor(
+        private queueService: QueueService,
+        private prismaService: PrismaService,
+    ) { }
   
   async runCode(langauge: string ,code: string){
     const job = await this.queueService.addJob("run-code" , {
@@ -39,5 +43,31 @@ export class CodeRunnerService{
             stacktrace: job.stacktrace
         }
      }
-  }
+    }
+    
+    async runTestCode(challengeId: number, code: string, langauge: string) {
+        const testCases = await this.prismaService.testCase.findMany({
+            where: {
+                challenge_id: challengeId
+            }
+        })
+
+        if (testCases.length == 0) {
+            throw new HttpException(
+                "No Test Case Found",
+                HttpStatus.NOT_FOUND
+            );
+        }
+
+        const job = await this.queueService.addJob("test-code", {
+            code,
+            langauge,
+            testCases,
+        });
+        
+        return {
+            jobId: job.id,
+            status: "queued"
+        };
+    }
 }
