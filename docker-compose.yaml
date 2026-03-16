@@ -14,7 +14,9 @@ services:
       PORT: 3000
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      CODE_VOLUME_NAME: eduai-github-assistant-backend_code-temp
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      CODE_VOLUME_NAME: eduai-github-aassistant-backend_code-temp
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/codify
     volumes:
       - code-temp:/code-temp
