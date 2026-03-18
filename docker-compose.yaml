@@ -16,7 +16,6 @@ services:
       REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
-      CODE_VOLUME_NAME: eduai-github-aassistant-backend_code-temp
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/codify
     volumes:
       - code-temp:/code-temp
@@ -62,4 +61,6 @@ services:
     command: ["sleep", "infinity"]
 volumes:
   code-temp:
+    name: ${CODE_RUNNER_VOLUME_NAME}
   postgres-data:
+    name: ${DB_VOLUME_NAME}

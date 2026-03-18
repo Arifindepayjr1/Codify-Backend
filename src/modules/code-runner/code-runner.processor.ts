@@ -55,7 +55,7 @@ export class CodeRunnerProcessor implements OnModuleInit {
         const isDocker = fs.existsSync('/.dockerenv');
         const codeDir = isDocker ? "/code-temp" : process.cwd();
         const binds = isDocker
-            ? ["eduai-github-assistant-backend_code-temp:/code-temp:rw"]
+            ? [`${this.configService.get("CODE_RUNNER_VOLUME_NAME")}:/code-temp:rw`]
             : [`${process.cwd()}:/code-temp:rw`];
 
         const ext = language === "python" ? "py" : "c";
@@ -171,7 +171,7 @@ export class CodeRunnerProcessor implements OnModuleInit {
 
         const codeDir = isDocker ? "/code-temp" : process.cwd();
         const binds = isDocker
-            ? ["eduai-github-assistant-backend_code-temp:/code-temp:rw"]
+            ? [`${this.configService.get("CODE_RUNNER_VOLUME_NAME")}:/code-temp:rw`]
             : [`${process.cwd()}:/code-temp:rw`];
 
         const ext = language === "python" ? "py" : "c";
