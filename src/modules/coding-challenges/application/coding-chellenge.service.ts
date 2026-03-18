@@ -17,18 +17,17 @@ export class CodingChallengeService{
     dto: CreateCodingChallengeDto,
     userId: number
   ) {
-    const exist = await this.repo.findByTitle(dto.title);
-    if (exist) throw new ConflictException('Challenge title already exists');
 
     let challenge: CodingChallenge;
     try {
       challenge = CodingChallenge.create({
         userId: userId,
-        tagId: 1,
+        tagId: dto.tagId,
         title: dto.title,
         description: dto.description!,
         starterCode: dto.starterCode!,
-        language: dto.language
+        language: dto.language,
+        difficulty:dto.difficulty
       })
     } catch (error) {
       throw new BadRequestException(error.message);

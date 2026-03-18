@@ -127,7 +127,7 @@ model Tag {
 model CodingChallenge {
   id           Int                 @id @default(autoincrement())
   user_id      Int
-  tag_id       Int
+  tag_id       Int?
   title        String
   description  String              @db.Text
   starter_code String              @db.Text
@@ -137,7 +137,7 @@ model CodingChallenge {
   updated_at   DateTime            @updatedAt
 
   user                 User                  @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  tag                  Tag                   @relation(fields: [tag_id], references: [id])
+  tag                  Tag?                  @relation(fields: [tag_id], references: [id])
   test_cases           TestCase[]
   assignmentChallenges AssignmentChallenge[]
   codeSubmissions      CodeSubmission[]
@@ -158,15 +158,16 @@ model TestCase {
 }
 
 model AssignmentChallenge {
-  id                    Int      @id @default(autoincrement())
+  id                    Int                 @id @default(autoincrement())
   assignment_id         Int
   original_challenge_id Int
   title                 String
-  description           String   @db.Text
-  starter_code          String   @db.Text
+  description           String              @db.Text
+  starter_code          String              @db.Text
   language              String
-  created_at            DateTime @default(now())
-  updated_at            DateTime @updatedAt
+  difficulty            ChallengeDifficulty
+  created_at            DateTime            @default(now())
+  updated_at            DateTime            @updatedAt
 
   assignment        Assignment      @relation(fields: [assignment_id], references: [id], onDelete: Cascade)
   originalChallenge CodingChallenge @relation(fields: [original_challenge_id], references: [id])

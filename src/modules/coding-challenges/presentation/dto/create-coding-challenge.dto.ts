@@ -3,7 +3,8 @@ import {
   IsString,
   IsNotEmpty,
   IsEnum,
-  isInt
+  IsNumber,
+  IsOptional
 } from "class-validator";
 
 export enum  Difficulty{
@@ -32,7 +33,8 @@ export class CreateCodingChallengeDto{
   @IsEnum(Difficulty)
   difficulty: Difficulty;
 
-  @isInt(0)
+  @IsNumber()
+  @IsOptional()
   @IsNotEmpty()
   tagId:number;
 

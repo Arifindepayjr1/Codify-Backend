@@ -1,3 +1,5 @@
+import { ChallengeDifficulty } from "@prisma/client";
+
 export class CodingChallenge {
   constructor(
     public readonly id: number | null,
@@ -6,19 +8,24 @@ export class CodingChallenge {
     public description: string,
     public starterCode: string,
     public language: string,
-    public tagId:number,
+    public difficulty: ChallengeDifficulty,
+    public tagId?: number | null,
     public createdAt?: Date,
     public updatedAt?: Date,
+    public tag?: string
   ) {}
 
-  // create new entity
+  /**
+   * Create a new entity (not persisted yet)
+   */
   static create(props: {
     userId: number;
-    tagId: number ;
     title: string;
     description: string;
     starterCode: string;
     language: string;
+    difficulty: ChallengeDifficulty;
+    tagId?: number | null;
   }): CodingChallenge {
     return new CodingChallenge(
       null,
@@ -27,21 +34,26 @@ export class CodingChallenge {
       props.description,
       props.starterCode,
       props.language,
+      props.difficulty,
       props.tagId
     );
   }
 
-  // rebuild entity from database
+  /**
+   * Rebuild entity from database record
+   */
   static rehydrate(props: {
     id: number;
     userId: number;
-    tagId: number ;
     title: string;
     description: string;
     starterCode: string;
     language: string;
+    difficulty: ChallengeDifficulty;
+    tagId: number | null;
     createdAt: Date;
     updatedAt: Date;
+    tag?: string | null;
   }): CodingChallenge {
     return new CodingChallenge(
       props.id,
@@ -50,9 +62,11 @@ export class CodingChallenge {
       props.description,
       props.starterCode,
       props.language,
-      props.tagId,
+      props.difficulty,
+      props.tagId??undefined,
       props.createdAt,
-      props.updatedAt
+      props.updatedAt,
+      props.tag ?? undefined // safely convert null to undefined for entity
     );
   }
 }

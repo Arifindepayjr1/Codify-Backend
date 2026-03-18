@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
 import { CodingChallengeService } from "../application/coding-chellenge.service";
-import { CreateCodingChallengeDto } from "./dto/create-coding-challenge.dto";
+import { CreateCodingChallengeDto, Difficulty } from "./dto/create-coding-challenge.dto";
 import { CurrentUser } from "../../../common/decorators/current-user.decorator";
 import { CurrentUserDto } from "../../auth/dto/current-user.dto";
 import { JwtAuthGuard } from "../../../common/guards/jwt-auth.guard";
@@ -95,7 +95,9 @@ export class CodingChallengeController{
           title: 'FizzBuzz Challenge',
           description: 'Implement FizzBuzz in JS',
           starterCode: 'function fizzBuzz() {}',
-          language: 'javascript'
+          language: 'javascript',
+          tagId:1,
+          difficulty:"MEDIUM"
         }
       }
     }
