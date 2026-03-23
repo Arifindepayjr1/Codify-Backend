@@ -3,6 +3,7 @@ import { PrismaService } from "prisma/prisma.service";
 import { Submission } from "../submission.entity";
 import { SubmissionRepository } from "./submission.repository";
 import { SubmissionStatus } from "../submissionStatus.enum";
+import { CodeSubmission } from "../challengeSubmission.entity";
 
 @Injectable()
 export class SubmissionPrismaRepository implements SubmissionRepository {
@@ -18,15 +19,17 @@ export class SubmissionPrismaRepository implements SubmissionRepository {
         submitted_at: submission.submittedAt,
         created_at: submission.createdAt,
         updated_at: submission.updatedAt,
-        codeSubmits: {
+        codeSubmissions: {
           create: submission.codeSubmissions.map(cs => ({
-            challenge_id: cs.challengeId,
             code: cs.code,
+            assignmentChallenge: {
+              connect: { id: cs.challengeId }
+            }            
           })),
         },
       },
       include: {
-        codeSubmits: true,
+        codeSubmissions: true,
       },
     });
 
@@ -39,16 +42,21 @@ export class SubmissionPrismaRepository implements SubmissionRepository {
       submittedAt: created.submitted_at,
       createdAt: created.created_at,
       updatedAt: created.updated_at,
-      codeSubmissions: created.codeSubmits.map(cs => ({
+      codeSubmissions: created.codeSubmissions.map(cs => ({
         id: cs.id,
-        challengeId: cs.challenge_id,
+        challengeId: cs.assignment_challenge_id,
         code: cs.code,
       })),
     });
   }
 
   async findById(id: number): Promise<Submission | null> {
-    const found = await this.prisma.submission.findUnique({ where: { id } });
+    const found = await this.prisma.submission.findUnique({
+      where: { id },
+      include: {
+        codeSubmissions: true
+      }
+    });
     if (!found) return null;
 
     return Submission.rehydrate({
@@ -60,13 +68,22 @@ export class SubmissionPrismaRepository implements SubmissionRepository {
       submittedAt: found.submitted_at,
       createdAt: found.created_at,
       updatedAt: found.updated_at,
-      codeSubmissions: [],
+      codeSubmissions: found.codeSubmissions.map(cS => {
+        return CodeSubmission.rehydrate({
+          id: cS.id,
+          challengeId: cS.assignment_challenge_id,
+          code: cS.code
+        });
+      }),
     });
   }
 
   async findByStudentAndAssignment(userId: number, assignmentId: number): Promise<Submission[]> {
     const submissions = await this.prisma.submission.findMany({
       where: { user_id: userId, assignment_id: assignmentId },
+      include: {
+        codeSubmissions: true
+      }
     });
 
     return submissions.map(s =>
@@ -79,7 +96,13 @@ export class SubmissionPrismaRepository implements SubmissionRepository {
         submittedAt: s.submitted_at,
         createdAt: s.created_at,
         updatedAt: s.updated_at,
-        codeSubmissions: [],
+        codeSubmissions: s.codeSubmissions.map(cS => {
+          return CodeSubmission.rehydrate({
+            id: cS.id,
+            challengeId: cS.assignment_challenge_id,
+            code: cS.code
+          });
+        }),
       }),
     );
   }
@@ -87,6 +110,9 @@ export class SubmissionPrismaRepository implements SubmissionRepository {
   async findByAssignment(assignmentId: number): Promise<Submission[]> {
     const submissions = await this.prisma.submission.findMany({
       where: { assignment_id: assignmentId },
+      include: { 
+        codeSubmissions: true
+      }
     });
 
     return submissions.map(s =>
@@ -99,7 +125,13 @@ export class SubmissionPrismaRepository implements SubmissionRepository {
         submittedAt: s.submitted_at,
         createdAt: s.created_at,
         updatedAt: s.updated_at,
-        codeSubmissions: [],
+        codeSubmissions: s.codeSubmissions.map(cS => {
+          return CodeSubmission.rehydrate({
+            id: cS.id,
+            challengeId: cS.assignment_challenge_id,
+            code: cS.code
+          });
+        }),
       }),
     );
   }
@@ -107,6 +139,9 @@ export class SubmissionPrismaRepository implements SubmissionRepository {
   async update(submission: Submission): Promise<Submission> {
     const updated = await this.prisma.submission.update({
       where: { id: submission.id! },
+      include: {
+        codeSubmissions: true
+      },
       data: {
         status: submission.status,
         submitted_at: submission.submittedAt,
@@ -123,7 +158,13 @@ export class SubmissionPrismaRepository implements SubmissionRepository {
       submittedAt: updated.submitted_at,
       createdAt: updated.created_at,
       updatedAt: updated.updated_at,
-      codeSubmissions: [],
+      codeSubmissions: updated.codeSubmissions.map(cS => {
+        return CodeSubmission.rehydrate({
+          id: cS.id,
+          challengeId: cS.assignment_challenge_id,
+          code: cS.code
+        });
+      }),
     });
   }
 }

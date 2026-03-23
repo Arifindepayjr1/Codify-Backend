@@ -1,5 +1,6 @@
-import { ApiProperty, ApiSchema } from '@nestjs/swagger';
-import { SubmissionStatus } from '../submissionStatus.enum';
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { SubmissionStatus } from "@prisma/client";
+import { CodeSubmissionResponseDto } from "./code-submission-response.dto";
 
 @ApiSchema({ name: 'Submission' })
 export class SubmissionResponseDto {
@@ -7,29 +8,26 @@ export class SubmissionResponseDto {
   id: number;
 
   @ApiProperty({ example: 1 })
-  classroomId: number;
+  userId: number;
 
   @ApiProperty({ example: 1 })
   assignmentId: number;
 
-  @ApiProperty({ example: 42 })
-  studentId: number;
-
-  @ApiProperty({
-    example: 'This is my draft submission content.',
-    required: false,
-  })
-  content?: string;
-
   @ApiProperty({ enum: SubmissionStatus, example: SubmissionStatus.DRAFT })
   status: SubmissionStatus;
 
-  @ApiProperty({ example: 95, required: false })
-  grade?: number;
+  @ApiProperty({ example: 0 })
+  totalScore: number;
 
-  @ApiProperty({ example: '2026-03-14T12:00:00.000Z' })
+  @ApiProperty({ example: '2026-03-23T16:05:01.822Z' })
+  submittedAt: string;
+
+  @ApiProperty({ example: '2026-03-23T16:05:01.780Z' })
   createdAt: string;
 
-  @ApiProperty({ example: '2026-03-14T12:30:00.000Z' })
+  @ApiProperty({ example: '2026-03-23T16:05:01.780Z' })
   updatedAt: string;
+
+  @ApiProperty({ type: [CodeSubmissionResponseDto] })
+  codeSubmissions: CodeSubmissionResponseDto[];
 }

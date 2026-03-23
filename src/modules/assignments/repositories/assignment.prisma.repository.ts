@@ -6,8 +6,8 @@ import { UpdateAssignmentChallengeDto } from '../dto/update-assignment-challenge
 
 @Injectable()
 export class AssignmentPrismaRepository implements AssignmentRepository {
-  constructor(private readonly prisma: PrismaService) {}
-
+  constructor(private readonly prisma: PrismaService) { }
+  
   async create(assignment: Assignment): Promise<Assignment> {
     const result = await this.prisma.assignment.create({
       data: {
