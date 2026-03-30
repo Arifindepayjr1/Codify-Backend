@@ -131,7 +131,7 @@ export class AssignmentService {
     return {
       id: challenge.id,
       assignmentId: challenge.assignment_id,
-      originalChallengeId: challenge.original_challenge_id,
+      originalChallengeId: challenge.original_challenge_id!,
       title: challenge.title,
       description: challenge.description,
       startCode: challenge.starter_code,

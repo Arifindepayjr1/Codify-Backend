@@ -116,21 +116,14 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
   async getAllChallengeByAssignment(assignmentId: number): Promise<CodingChallenge[]> {
     const results = await this.prisma.assignmentChallenge.findMany({
       where: { assignment_id: assignmentId },
-      include: {
-        originalChallenge: {
-          include: {
-            tag: true
-          }
-        }
-      }
     });
 
     return results.map(r =>
       CodingChallenge.rehydrate({
         id: r.id,
-        userId: r.original_challenge_id,
-        tagId: r.originalChallenge.tag_id,
-        tag:r.originalChallenge.tag?.name,
+        userId: 1,
+        tagId: 0,
+        tag: r.tag_name,
         title: r.title,
         description: r.description,
         starterCode: r.starter_code,

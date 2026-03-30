@@ -1,5 +1,5 @@
+import { SubmissionStatus } from "@prisma/client";
 import { CodeSubmission } from "./challengeSubmission.entity";
-import { SubmissionStatus } from "./submission.status.enum";
 
 export class Submission {
   constructor(

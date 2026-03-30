@@ -1,4 +1,4 @@
-import { Submission } from "../submission.entity";
+import { Submission } from "../domain/submission.entity";
 import { SubmissionDetail } from "../submission.types";
 
 export interface SubmissionRepository {

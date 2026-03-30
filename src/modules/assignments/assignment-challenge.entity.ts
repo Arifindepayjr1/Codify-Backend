@@ -4,12 +4,14 @@ export class AssignmentChallenge {
   constructor(
     public readonly id: number | null,
     public assignmentId: number,
-    public originalChallengeId: number,
+    public originalChallengeId: number | null,
+    public originalTitle: string,
     public title: string,
     public description: string,
     public starterCode: string,
     public language: string,
     public difficulty: ChallengeDifficulty,
+    public tagName: string | null,
     public createdAt: Date,
     public updatedAt: Date,
   ) {}
@@ -17,11 +19,13 @@ export class AssignmentChallenge {
   static create(props: {
     assignmentId: number;
     originalChallengeId: number;
+    originalTitle: string;
     title: string;
     description: string;
     starterCode: string;
     language: string;
     difficulty: ChallengeDifficulty;
+    tagName: string;
   }): AssignmentChallenge {
     const now = new Date();
 
@@ -29,11 +33,13 @@ export class AssignmentChallenge {
       null,
       props.assignmentId,
       props.originalChallengeId,
+      props.originalTitle,
       props.title,
       props.description,
       props.starterCode,
       props.language,
       props.difficulty,
+      props.tagName,
       now,
       now,
     );
@@ -42,12 +48,14 @@ export class AssignmentChallenge {
   static rehydrate(props: {
     id: number;
     assignmentId: number;
-    originalChallengeId: number;
+    originalChallengeId: number | null;
+    originalTitle: string;
     title: string;
     description: string;
     starterCode: string;
     language: string;
     difficulty: ChallengeDifficulty;
+    tagName: string | null;
     createdAt: Date;
     updatedAt: Date;
   }): AssignmentChallenge {
@@ -55,11 +63,13 @@ export class AssignmentChallenge {
       props.id,
       props.assignmentId,
       props.originalChallengeId,
+      props.originalTitle,
       props.title,
       props.description,
       props.starterCode,
       props.language,
       props.difficulty,
+      props.tagName,
       props.createdAt,
       props.updatedAt,
     );

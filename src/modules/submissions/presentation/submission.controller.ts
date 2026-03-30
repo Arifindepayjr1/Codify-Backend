@@ -20,19 +20,23 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { SubmissionService } from './submission.service';
+import { SubmissionService } from '../application/submission.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { CurrentUserDto } from '../auth/dto/current-user.dto';
+import { CurrentUserDto } from '../../auth/dto/current-user.dto';
 import { UpdateSubmissionDto } from './dto/update-submission.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { SubmissionDto } from './dto/response/submission.dto';
+import { FeedbackService } from '../application/feedback.service';
+import { SubmissionDto } from '../dto/response/submission.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @ApiTags('submissions')
 @Controller('classrooms/:classroomId/assignments/:assignmentId/submissions')
 export class SubmissionController {
-  constructor(private readonly service: SubmissionService) {}
+  constructor(
+    private readonly service: SubmissionService,
+    private readonly feedbackService: FeedbackService
+  ) { }
 
   // ================= CREATE DRAFT =================
   @Post()
@@ -133,4 +137,48 @@ export class SubmissionController {
   ) {
     // return this.service.getSubmission(classroomId, assignmentId, submissionId, user.id);
   }
+
+  @Get(':submissionId/feedback')
+  @ApiOperation({ summary: 'Get a feedback from specific submission' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiParam({ name: 'assignmentId', example: 1 })
+  @ApiParam({ name: 'submissionId', example: 1 })
+  @ApiOkResponse({
+    description: 'Feedback found',
+  })
+  @ApiNotFoundResponse({ description: 'Feedback not found' })
+  getFeedback(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('submissionId', ParseIntPipe) submissionId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.feedbackService.getFeedback(
+      submissionId,
+      user.id
+    );
+  }
+
+  @Post(':submissionId/feedback')
+  @ApiOperation({ summary: 'Create a new submission draft' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiParam({ name: 'assignmentId', example: 1 })
+  @ApiParam({ name: 'submissionId', example: 1 })
+  @ApiCreatedResponse({
+    description: 'feedback created successfully',
+  })
+  createFeedback(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('submissionId', ParseIntPipe) submissionId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.feedbackService.createFeedback(
+      classroomId,
+      assignmentId,
+      submissionId,
+      user.id
+    )
+  }
+  
 }

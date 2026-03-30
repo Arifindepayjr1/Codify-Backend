@@ -10,7 +10,7 @@ async function bootstrap() {
 
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe())
-  app.useGlobalFilters(new PrismaExceptionFilter)
+  // app.useGlobalFilters(new PrismaExceptionFilter)
   
   const config = new DocumentBuilder()
     .setTitle('the BEST API')

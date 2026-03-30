@@ -183,6 +183,7 @@ async function main() {
     data: {
       assignment_id: assignment.id,
       original_challenge_id: challenge.id,
+      original_title: challenge.title,
       title: challenge.title,
       description: challenge.description,
       starter_code: challenge.starter_code,

@@ -31,6 +31,11 @@ services:
       - "5173:5173"
     depends_on:
       - app
+    environment:
+      - BACKEND_URL=http://app:3000  # proxy target inside Docker network
+    volumes:
+      - ../CODIFY-Frontend:/app      # hot reload
+      - /app/node_modules           
     restart: unless-stopped
 
   redis:

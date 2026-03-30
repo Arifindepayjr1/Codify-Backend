@@ -59,11 +59,13 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
       id: result.id,
       assignmentId: result.assignment_id,
       originalChallengeId: result.original_challenge_id,
+      originalTitle: result.original_title,
       title: result.title,
       description: result.description,
       starterCode: result.starter_code,
       language: result.language,
       difficulty: result.difficulty,
+      tagName: result.tag_name,
       createdAt: result.created_at,
       updatedAt: result.updated_at,
     }): null;
@@ -75,10 +77,7 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
   ): Promise<AssignmentChallengeWithTestCases | null> {
     const result = await this.prisma.assignmentChallenge.findUnique({
       where: {
-        assignment_id_original_challenge_id: {
-          assignment_id: assignmentId,
-          original_challenge_id: challengeId
-        }
+        id: challengeId,
       },
       include: {
         test_cases: true
@@ -103,11 +102,13 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
         id: item.id,
         assignmentId: item.assignment_id,
         originalChallengeId: item.original_challenge_id,
+        originalTitle: item.original_title,
         title: item.title,
         description: item.description,
         starterCode: item.starter_code,
         language: item.language,
         difficulty: item.difficulty,
+        tagName: item.tag_name,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
       })
@@ -193,11 +194,13 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
       id: updated.id,
       assignmentId: updated.assignment_id,
       originalChallengeId: updated.original_challenge_id,
+      originalTitle: updated.original_title,
       title: updated.title,
       description: updated.description,
       starterCode: updated.starter_code,
       language: updated.language,
       difficulty: updated.difficulty,
+      tagName: updated.tag_name,
       createdAt: updated.created_at,
       updatedAt: updated.updated_at,
     })
@@ -227,7 +230,10 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     for (const challengeId of challengeIds) {
       const challenge = await this.prisma.codingChallenge.findUnique({
         where: { id: challengeId },
-        include: { test_cases: true },
+        include: {
+          tag: true,
+          test_cases: true
+        },
       });
 
       if (!challenge) continue;
@@ -236,11 +242,13 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
         data: {
           assignment_id: assignmentId,
           original_challenge_id: challenge.id,
+          original_title: challenge.title,
           title: challenge.title,
           description: challenge.description,
           starter_code: challenge.starter_code,
           language: challenge.language,
-          difficulty:challenge.difficulty,
+          difficulty: challenge.difficulty,
+          tag_name: challenge.tag?.name,
           test_cases: {
             create: challenge.test_cases.map(tc => ({
               input: tc.input,
