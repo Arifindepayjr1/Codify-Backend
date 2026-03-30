@@ -3,7 +3,7 @@ import { PrismaService } from "prisma/prisma.service";
 import { Submission } from "../domain/submission.entity";
 import { SubmissionRepository } from "./submission.repository";
 import { CodeSubmission } from "../domain/challengeSubmission.entity";
-import { SubmissionDetail } from "../submission.types";
+import { CodeSubmissionDetail, SubmissionDetail } from "../submission.types";
 import { SubmissionStatus } from "@prisma/client";
 
 @Injectable()
@@ -89,11 +89,24 @@ export class SubmissionPrismaRepository implements SubmissionRepository {
           select: {
             due_at: true
           }
-        }
+        },
+        feedback: true
       }
     });
 
     return result;
+  }
+
+  async findCodeSubmissionDetail(id: number): Promise<CodeSubmissionDetail | null> {
+    const result = await this.prisma.codeSubmission.findUnique({
+      where: { id },
+      include: {
+        feedbackChallenge: true,
+        assignmentChallenge: true,
+      }
+    })
+
+    return result ?? null;
   }
 
   async findByAssignment(assignmentId: number): Promise<Submission[]> {

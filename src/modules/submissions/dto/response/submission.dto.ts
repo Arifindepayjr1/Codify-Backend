@@ -26,6 +26,8 @@ export class SubmissionDto {
   })
   submittedAt: Date | undefined;
 
+  @ApiProperty({ example: 'AMAZOON' })
+  feedback: string | undefined;
   // @ApiProperty({ example: '2026-03-23T16:05:01.780Z' })
   // createdAt: string;
 

@@ -7,6 +7,7 @@ import {
   Body,
   ParseIntPipe,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,6 +19,7 @@ import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiBearerAuth,
+  ApiNoContentResponse,
 } from '@nestjs/swagger';
 
 import { SubmissionService } from '../application/submission.service';
@@ -27,6 +29,8 @@ import { UpdateSubmissionDto } from './dto/update-submission.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { FeedbackService } from '../application/feedback.service';
 import { SubmissionDto } from '../dto/response/submission.dto';
+import { FeedbackDto } from 'src/modules/assignments/dto/feedback.dto';
+import { CodeSubmission } from '../domain/challengeSubmission.entity';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -135,7 +139,34 @@ export class SubmissionController {
     @Param('submissionId', ParseIntPipe) submissionId: number,
     @CurrentUser() user: CurrentUserDto,
   ) {
-    // return this.service.getSubmission(classroomId, assignmentId, submissionId, user.id);
+    return this.service.getSubmission(classroomId, assignmentId, submissionId, user.id);
+  }
+    
+  @Get(':submissionId/:codeSubmissionId')
+  @ApiOperation({ summary: 'Get a specific submission' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiParam({ name: 'assignmentId', example: 1 })
+  @ApiParam({ name: 'submissionId', example: 1 })
+  @ApiParam({ name: 'codeSubmissionId', example: 1 })
+  @ApiOkResponse({
+    description: 'Submission found',
+    type: SubmissionDto,
+  })
+  @ApiNotFoundResponse({ description: 'Submission not found' })
+  getCodeSubmission(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('submissionId', ParseIntPipe) submissionId: number,
+    @Param('codeSubmissionId', ParseIntPipe) codeSubmissionId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.getCodeSubmission(
+      classroomId,
+      assignmentId,
+      submissionId,
+      codeSubmissionId,
+      user.id
+    );
   }
 
   @Get(':submissionId/feedback')
@@ -171,14 +202,112 @@ export class SubmissionController {
     @Param('classroomId', ParseIntPipe) classroomId: number,
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
     @Param('submissionId', ParseIntPipe) submissionId: number,
+    @Body() dto: FeedbackDto,
     @CurrentUser() user: CurrentUserDto,
   ) {
     return this.feedbackService.createFeedback(
       classroomId,
       assignmentId,
       submissionId,
-      user.id
-    )
+      user.id,
+      dto,
+    );
   }
-  
+
+  @Patch(':submissionId/feedback')
+  @ApiOperation({ summary: 'Update feedback for a submission' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiParam({ name: 'assignmentId', example: 1 })
+  @ApiParam({ name: 'submissionId', example: 1 })
+  @ApiOkResponse({
+    description: 'Feedback updated successfully',
+  })
+  updateFeedback(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('submissionId', ParseIntPipe) submissionId: number,
+    @Body() dto: FeedbackDto,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.feedbackService.updateFeedback(
+      classroomId,
+      assignmentId,
+      submissionId,
+      user.id,
+      dto,
+    );
+  }
+
+  @Delete(':submissionId/feedback')
+  @ApiOperation({ summary: 'Delete feedback for a submission' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiParam({ name: 'assignmentId', example: 1 })
+  @ApiParam({ name: 'submissionId', example: 1 })
+  @ApiNoContentResponse({
+    description: 'Feedback deleted successfully',
+  })
+  deleteFeedback(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('submissionId', ParseIntPipe) submissionId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.feedbackService.deleteFeedback(
+      classroomId,
+      assignmentId,
+      submissionId,
+      user.id,
+    );
+  }
+
+
+  // ----------------- Challenge Feedback -----------------
+  @Post('submissions/:submissionId/challenges/:codeSubmissionId/feedback')
+  createChallengeFeedback(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('codeSubmissionId', ParseIntPipe) codeSubmissionId: number,
+    @Body() dto: FeedbackDto,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.feedbackService.createChallengeFeedback(
+      classroomId,
+      assignmentId,
+      codeSubmissionId,
+      user.id,
+      dto,
+    );
+  }
+
+  @Patch('submissions/:submissionId/challenges/:codeSubmissionId/feedback')
+  updateChallengeFeedback(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('codeSubmissionId', ParseIntPipe) codeSubmissionId: number,
+    @Body() dto: FeedbackDto,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.feedbackService.updateChallengeFeedback(
+      classroomId,
+      assignmentId,
+      codeSubmissionId,
+      user.id,
+      dto,
+    );
+  }
+
+  @Delete('submissions/:submissionId/challenges/:codeSubmissionId/feedback')
+  deleteChallengeFeedback(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('codeSubmissionId', ParseIntPipe) codeSubmissionId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.feedbackService.deleteChallengeFeedback(
+      classroomId,
+      assignmentId,
+      codeSubmissionId,
+      user.id,
+    );
+  }
 }

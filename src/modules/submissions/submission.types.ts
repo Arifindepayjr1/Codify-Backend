@@ -7,6 +7,14 @@ export type SubmissionDetail = Prisma.SubmissionGetPayload<{
       select: {
         due_at: true
       }
-    }
+    },
+    feedback: true,
+  }
+}>
+
+export type CodeSubmissionDetail = Prisma.CodeSubmissionGetPayload<{
+  include: {
+    feedbackChallenge: true,
+    assignmentChallenge: true,
   }
 }>

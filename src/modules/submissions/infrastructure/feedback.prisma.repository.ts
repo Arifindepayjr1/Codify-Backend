@@ -2,47 +2,138 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { FeedbackRepository } from "./feedback.repository";
 import { Feedback } from "../domain/feedback.entity";
 import { PrismaService } from "prisma/prisma.service";
+import { AssignmentChallengeFeedback } from "../domain/assignmentChallengeFeedback.entity";
 
 @Injectable()
 export class FeedbackPrismaRepository implements FeedbackRepository{
-
   constructor(
     private readonly prisma : PrismaService
-  ) {}
+  ) { }
+  async create(feedback: Feedback): Promise<Feedback> {
+    const result = await this.prisma.feedback.create({
+      data: {
+        teacher_id: feedback.teacherId,
+        submission_id: feedback.submissionId,
+        text: feedback.feedback
+      }
+    });
 
-  create(feedback: Feedback): Promise<Feedback> {
-    throw new Error("Method not implemented.");
+    return Feedback.rehydrate({
+      id: result.id,
+      teacherId: result.teacher_id,
+      submissionId: result.submission_id,
+      feedback: result.text,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at
+    });
   }
   
-  async getFeedbackBySubmission(submissionId: number): Promise<Feedback|null> {
+  async findBySubmissionId(id: number): Promise<Feedback | null> {
+    const result = await this.prisma.feedback.findUnique({
+      where: { id }
+    });
 
-    const found = await this.prisma.feedback.findUnique(
-      {
-        where: {
-          submission_id:submissionId
-        }
+    return result ? Feedback.rehydrate({
+      teacherId: result.teacher_id,
+      submissionId: result.submission_id,
+      feedback: result.text,
+      id: result.id,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at
+    }) : null;
+  }
+
+  async update(feedback: Feedback, submissionId: number): Promise<Feedback> {
+    const result = await this.prisma.feedback.update({
+      where: { submission_id: submissionId },
+      data: {
+        text: feedback.feedback,
+        updated_at: feedback.updatedAt
       }
-    )
+    });
 
-    if (!found) {
-      return null;
-    }
     return Feedback.rehydrate({
-      teacherId: found.teacher_id,
-      submissionId: found.submission_id,
-      text: found.text,
-      id: found.id,
-      createdAt: found.created_at,
-      updatedAt: found.updated_at
-    })
+      id: result.id,
+      teacherId: result.teacher_id,
+      submissionId: result.submission_id,
+      feedback: result.text,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at
+    });
   }
 
-  update(feedback: Feedback, submissionId: number): Promise<Feedback> {
-    throw new Error("Method not implemented.");
+  async delete(submissionId: number): Promise<void> {
+    await this.prisma.feedback.delete({
+      where: { submission_id: submissionId }
+    });
   }
 
-  delete(submissionId: number): void {
-    throw new Error("Method not implemented.");
+  async createChallengeFeedback(
+    feedback: AssignmentChallengeFeedback,
+    codeSubmissionId: number
+  ): Promise<AssignmentChallengeFeedback> {
+    const result = await this.prisma.feedbackChallenge.create({
+      data: {
+        teacher_id: feedback.teacherId,
+        code_submission_id: codeSubmissionId,
+        text: feedback.feedback,
+      },
+    });
+
+    return AssignmentChallengeFeedback.rehydrate({
+      id: result.id,
+      teacherId: result.teacher_id,
+      codeSubmissionId: result.code_submission_id,
+      feedback: result.text,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
+    });
+  }
+  
+  async findByCodeSubmissionId(
+    codeSubmissionId: number
+  ): Promise<AssignmentChallengeFeedback | null> {
+    const result = await this.prisma.feedbackChallenge.findUnique({
+      where: { code_submission_id: codeSubmissionId },
+    });
+
+    return result
+      ? AssignmentChallengeFeedback.rehydrate({
+          id: result.id,
+          teacherId: result.teacher_id,
+          codeSubmissionId: result.code_submission_id,
+          feedback: result.text,
+          createdAt: result.created_at,
+          updatedAt: result.updated_at,
+        })
+      : null;
+  }
+  
+  async updateChallengeFeedback(
+    feedback: AssignmentChallengeFeedback,
+    codeSubmissionId: number
+  ): Promise<AssignmentChallengeFeedback> {
+    const result = await this.prisma.feedbackChallenge.update({
+      where: { code_submission_id: codeSubmissionId },
+      data: {
+        text: feedback.feedback,
+        updated_at: feedback.updatedAt,
+      },
+    });
+
+    return AssignmentChallengeFeedback.rehydrate({
+      id: result.id,
+      teacherId: result.teacher_id,
+      codeSubmissionId: result.code_submission_id,
+      feedback: result.text,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
+    });
   }
 
+  async deleteChallengeFeedback(codeSubmissionId: number): Promise<void> {
+    await this.prisma.feedbackChallenge.delete({
+      where: { code_submission_id: codeSubmissionId },
+    });
+  }
 }

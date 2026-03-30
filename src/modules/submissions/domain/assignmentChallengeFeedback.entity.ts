@@ -1,24 +1,23 @@
-export class Feedback {
+export class AssignmentChallengeFeedback {
   constructor(
     public readonly id: number | null,
     public teacherId: number,
-    public submissionId: number,
+    public codeSubmissionId: number,
     public feedback: string,
     public createdAt?: Date,
     public updatedAt?: Date,
-  ) { }
+  ) {}
 
   static create(props: {
     teacherId: number;
-    submissionId: number;
+    codeSubmissionId: number;
     feedback: string;
-  }): Feedback {
+  }): AssignmentChallengeFeedback {
     const now = new Date();
-
-    return new Feedback(
+    return new AssignmentChallengeFeedback(
       null,
       props.teacherId,
-      props.submissionId,
+      props.codeSubmissionId,
       props.feedback,
       now,
       now
@@ -28,27 +27,18 @@ export class Feedback {
   static rehydrate(props: {
     id: number;
     teacherId: number;
-    submissionId: number;
+    codeSubmissionId: number;
     feedback: string;
     createdAt: Date;
     updatedAt: Date;
-  }): Feedback {
-    return new Feedback(
+  }): AssignmentChallengeFeedback {
+    return new AssignmentChallengeFeedback(
       props.id,
       props.teacherId,
-      props.submissionId,
+      props.codeSubmissionId,
       props.feedback,
       props.createdAt,
       props.updatedAt
     );
-  }
-
-  update(newText: string): void {
-    if (!newText || newText.trim().length === 0) {
-      throw new Error('Feedback text cannot be empty');
-    }
-
-    this.feedback = newText.trim();
-    this.updatedAt = new Date();
   }
 }

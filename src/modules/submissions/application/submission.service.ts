@@ -87,14 +87,6 @@ export class SubmissionService {
     return this.repo.update(submission);
   }
 
-  // async getMySubmission(
-  //   classroomId: number,
-  //   assignmentId: number,
-  //   userId: number
-  // ) {
-  //   return this.repo.findByStudentAndAssignment
-  // }
-
   async getAssignmentSubmissions(
     classroomId: number,
     assignmentId: number,
@@ -124,11 +116,38 @@ export class SubmissionService {
       ),
       totalScore: submission.total_score,
       submittedAt: submission.submitted_at,
+      feedback: submission.feedback?.text,
       codeSubmissions: submission.codeSubmissions.map(c => ({
         id: c.id!,
         challengeId: c.assignment_challenge_id,
         code: c.code
       }))
+    };
+  }
+
+  async getCodeSubmission(
+    classroomId: number,
+    assignmentId: number,
+    submissionId: number,
+    codeSubmissionId: number,
+    userId: number
+  ) {
+    const codeSubmission = await this.repo.findCodeSubmissionDetail(codeSubmissionId);
+    if (!codeSubmission) {
+      throw new NotFoundException('Code submission not found');
+    }
+
+    return {
+      id: codeSubmission.id,
+      code: codeSubmission.code,
+      assignmentId: codeSubmission.assignmentChallenge.assignment_id,
+      originalId: codeSubmission.assignmentChallenge.original_challenge_id,
+      originalTitle: codeSubmission.assignmentChallenge.original_title,
+      title: codeSubmission.assignmentChallenge.title,
+      description: codeSubmission.assignmentChallenge.description,
+      language: codeSubmission.assignmentChallenge.language,
+      difficulty: codeSubmission.assignmentChallenge.difficulty,
+      tagName: codeSubmission.assignmentChallenge.tag_name
     };
   }
 
