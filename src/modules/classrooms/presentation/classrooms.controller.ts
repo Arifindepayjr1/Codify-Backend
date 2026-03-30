@@ -26,7 +26,6 @@ import {
 import { ClassroomService } from '../application/classroom.service';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
-import { ClassroomResponseDto } from './dto/classroom-response.dto';
 import { Role } from '../domain/role.enum';
 import { ClassroomMemberResponseDto } from './dto/classroom-member-response.dto';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
@@ -35,6 +34,7 @@ import { CurrentUserDto } from '../../../modules/auth/dto/current-user.dto';
 import { ClassroomMembershipService } from '../application/classroom-membership.service';
 import { AddMembersDto } from './dto/add-members.dto';
 import { ClassroomMemberGuard } from 'src/common/guards/classroom-member.guard';
+import { ClassroomDto } from './dto/response/classroom.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -53,7 +53,7 @@ export class ClassroomsController {
   @ApiBody({ type: CreateClassroomDto })
   @ApiCreatedResponse({
     description: 'Classroom created successfully',
-    type: ClassroomResponseDto,
+    type: ClassroomDto,
   })
   create(
     @Body() dto: CreateClassroomDto,
@@ -70,7 +70,7 @@ export class ClassroomsController {
   @ApiBody({ type: UpdateClassroomDto })
   @ApiOkResponse({
     description: 'Classroom updated successfully',
-    type: ClassroomResponseDto,
+    type: ClassroomDto,
   })
   update(
     @Param('classroomId', ParseIntPipe) classroomId: number,
@@ -104,7 +104,7 @@ export class ClassroomsController {
   @ApiOperation({ summary: 'Get all classrooms for current user' })
   @ApiOkResponse({
     description: 'List of classrooms',
-    type: [ClassroomResponseDto],
+    type: [ClassroomDto],
   })
   findAll(
     @CurrentUser() user: CurrentUserDto,
@@ -122,7 +122,7 @@ export class ClassroomsController {
   })
   @ApiOkResponse({
     description: 'Classroom found',
-    type: ClassroomResponseDto,
+    type: ClassroomDto,
   })
   @ApiNotFoundResponse({
     description: 'Invalid classroom code',
@@ -141,7 +141,7 @@ export class ClassroomsController {
   @ApiParam({ name: 'classroomId', example: 1 })
   @ApiOkResponse({
     description: 'Classroom found',
-    type: ClassroomResponseDto,
+    type: ClassroomDto,
   })
   @ApiNotFoundResponse({
     description: 'Classroom not found',

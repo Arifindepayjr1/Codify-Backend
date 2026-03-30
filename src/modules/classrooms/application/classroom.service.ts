@@ -5,7 +5,7 @@ import { CreateClassroomDto } from '../presentation/dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../presentation/dto/update-classroom.dto';
 import { Role } from '../domain/role.enum';
 import { ClassroomMembershipService } from './classroom-membership.service';
-import { ClassroomResponseDto } from '../presentation/dto/classroom-response.dto';
+import { ClassroomDto } from '../presentation/dto/response/classroom.dto';
 
 @Injectable()
 export class ClassroomService {
@@ -16,7 +16,7 @@ export class ClassroomService {
     private readonly membershipService: ClassroomMembershipService
   ) {}
 
-  async create(dto: CreateClassroomDto, userId: number): Promise<ClassroomResponseDto> {
+  async create(dto: CreateClassroomDto, userId: number): Promise<ClassroomDto> {
     const classCode = this.generateClassCode();
     const classroom = Classroom.create({
       classCode,
@@ -24,14 +24,15 @@ export class ClassroomService {
       description: dto.description,
     });
 
-    try {
-      return this.repo.create(classroom, userId);
-    } catch (e) {
-      if (e.code === '23505') {
-        throw new ConflictException('Classroom Code already exist');
-      }
+    const result = await this.repo.create(classroom, userId);
 
-      throw e;
+    return {
+      id: result.id!,
+      name: result.name,
+      classCode: result.classCode,
+      description: result.description,
+      role: Role.OWNER,
+      student: 0,
     }
   }
 
@@ -66,18 +67,33 @@ export class ClassroomService {
   }
 
   // REFACTORED
-  async findAll(userId: number) {
-    return this.repo.findAllByUser(userId);
+  async findAll(userId: number): Promise<ClassroomDto[]> {
+    const classrooms = await this.repo.findAllByUser(userId);
+    return classrooms.map(c => ({
+      id: c.id,
+      name: c.name,
+      classCode: c.class_code,
+      description: c.description ?? undefined,
+      role: c.users[0].role as Role,
+      student: c._count.users
+    }));
   }
 
   // REFACTORED
-  async findOne(id: number, userId: number): Promise<ClassroomResponseDto> {
+  async findOne(id: number, userId: number): Promise<ClassroomDto> {
     const classroom = await this.repo.findByIdWithDetails(id, userId);
     if (!classroom) {
       throw new NotFoundException('Classroom not found');
     }
 
-    return classroom;
+    return {
+      id: classroom.id,
+      name: classroom.name,
+      classCode: classroom.class_code,
+      description: classroom.description ?? undefined,
+      role: classroom._count.users[0]?.role,
+      student: classroom._count.users
+    };
   }
 
   async findByClassCode(code: string, userId: number): Promise<Classroom> {

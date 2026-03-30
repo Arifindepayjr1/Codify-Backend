@@ -3,13 +3,13 @@ import { PrismaService } from 'prisma/prisma.service';
 import { ClassroomRepository } from '../domain/classroom.repository';
 import { Classroom } from '../domain/classroom.entity';
 import { Role } from '../domain/role.enum';
-import { ClassroomResponseDto } from '../presentation/dto/classroom-response.dto';
+import { ClassroomWithStudents } from '../application/types/classroom.types';
 
 @Injectable()
 export class ClassroomRepositoryPrisma implements ClassroomRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(classroom: Classroom, creatorId: number): Promise<ClassroomResponseDto> {
+  async create(classroom: Classroom, creatorId: number): Promise<Classroom> {
     const result = await this.prisma.$transaction(async (tx) => {
       const created = await tx.classroom.create({
         data: {
@@ -30,19 +30,17 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
       return created;
     });
 
-    return new ClassroomResponseDto({
+    return Classroom.rehydrate({
       id: result.id,
       classCode: result.class_code,
       name: result.name,
       description: result.description ?? undefined,
-      createdAt: result.created_at.toISOString(),
-      updatedAt: result.updated_at.toISOString(),
-      role: Role.OWNER,
-      student: 0
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
     });
   }
 
-  async findAllByUser(userId: number): Promise<ClassroomResponseDto[]> {
+  async findAllByUser(userId: number): Promise<ClassroomWithStudents[]> {
     const results = await this.prisma.classroom.findMany({
       where: {
         users: {
@@ -66,20 +64,7 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
       },
     });
 
-    return results.map((r) => {
-      const role = r.users[0]?.role ?? Role.STUDENT;
-
-      return new ClassroomResponseDto({
-        id: r.id,
-        classCode: r.class_code,
-        name: r.name,
-        description: r.description ?? undefined,
-        createdAt: r.created_at.toISOString(),
-        updatedAt: r.updated_at.toISOString(),
-        role,
-        student: r._count.users,
-      });
-    });
+    return results;
   }
 
   async findById(classroomId: number): Promise<Classroom | null> {
@@ -97,7 +82,7 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
     }) : null;
   }
 
-  async findByIdWithDetails(id: number, userId: number): Promise<ClassroomResponseDto | null> {
+  async findByIdWithDetails(id: number, userId: number): Promise<ClassroomWithStudents | null> {
     const result = await this.prisma.classroom.findFirst({
       where: {
         id,
@@ -132,16 +117,7 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
 
     const role = result.users[0]?.role;
 
-    return new ClassroomResponseDto({
-      id: result.id,
-      classCode: result.class_code,
-      name: result.name,
-      description: result.description ?? undefined,
-      createdAt: result.created_at.toISOString(),
-      updatedAt: result.updated_at.toISOString(),
-      role,
-      student:result._count.users
-    });
+    return result;
   }
 
   async findByClassCode(classCode: string): Promise<Classroom | null> {
